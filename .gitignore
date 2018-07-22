@@ -8,10 +8,11 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.vscode/
+tmp/
 build/
 develop-eggs/
 dist/
-tmp/
 downloads/
 eggs/
 .eggs/
@@ -20,7 +21,6 @@ lib64/
 parts/
 sdist/
 var/
-tmp/
 wheels/
 *.egg-info/
 .installed.cfg
