@@ -45,6 +45,9 @@ if channel_admin is None:
     print('Specify LINE_CHANNEL_ADMIN as environment variable.')
     sys.exit(1)
 
+print('Channel Secret:',channel_secret)
+print('Channel Access Token:',channel_access_token)
+print('Channel Admin:',channel_admin)
 
 host = os.getenv('MONGO_HOST', None)
 port = os.getenv('MONGO_PORT', None)
@@ -72,16 +75,16 @@ static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 
 # function for create tmp dir for download content
 
-
 def make_static_tmp_dir():
     try:
         os.makedirs(static_tmp_path)
     except OSError as exc:
+        return
         if exc.errno == errno.EEXIST and os.path.isdir(static_tmp_path):
             pass
         else:
             raise
-
+make_static_tmp_dir()
 
 def save_message(event):
     client = MongoClient('mongodb://%s:%s@%s:%s' % (username, password, host, port))
@@ -182,7 +185,7 @@ def handle_message(event):
     save_message(event)
 
     uid = event.source.user_id
-
+    print('uid:',uid)
     if event.message.text == 'ออกไปได้แล้ว':
         if isinstance(event.source, SourceGroup):
             if event.source.user_id == channel_admin:
@@ -208,6 +211,7 @@ def handle_message(event):
 def handle_content_message(event):
     global latest_image_path
 
+    save_message(event)
     if isinstance(event.message, ImageMessage):
         ext = 'jpg'
     elif isinstance(event.message, VideoMessage):
@@ -228,16 +232,10 @@ def handle_content_message(event):
     os.rename(tempfile_path, dest_path)
 
     uid = event.source.user_id
-    if uid in reportingUsers:
-        catalog = reportingUsers[uid]
-        # TODO
-        saveToFirebase(catalog, event)
-        imageURL = saveImageToFirebase(catalog, dest_path)
-        print('Saved image to firebase:', imageURL)
-        return
 
     # Save image path
     latest_image_path = dest_path
+    return
     line_bot_api.reply_message(
         event.reply_token, [
             TextSendMessage(text='เก็บรูปให้แล้วค่ะ')
